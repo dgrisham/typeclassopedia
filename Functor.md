@@ -180,10 +180,38 @@ fmap (f . g) fg
 => fmap (fmap (f . g)) fg               --- composed functor instance
 => fmap (fmap f . fmap g) fg            --- inner functor obeys `fmap (f . g) = fmap f . fmap g`
 => fmap (fmap f) . fmap (fmap g) $ fg   --- outer functor obeys `fmap (f . g) = fmap f . fmap g`
+=> fmap f . fmap g $ fg                 --- defn of fmap for (f . g) run backwards (x2)
 ```
 
 Note that in these proofs we don't actually ever need to mention the particular
 functor `fg` at any point.
+
+Also note that this proof (and the instance above) can be very confusing because
+the various different `fmap`s don't all have the same type. One might think that
+`fmap h = fmap (fmap h)` would lead to the infinite loop:
+
+```hs
+fmap h
+fmap (fmap h)
+fmap (fmap (fmap h))
+fmap (fmap (fmap (fmap h)))
+...
+```
+
+This isn't the case though, because the `fmap`s in the different positions in
+the equation `fmap h = fmap (fmap h)` have different types, and the
+type-inferencer is able to tell this. I'll annotate the instance with numbers,
+`fmap1 h = fmap2 (fmap3 h)`. Then the types are:
+
+```hs
+fmap1 :: (a -> b) -> (f . g) a -> (f . g) b
+fmap2 :: (g a -> g b) -> f (g a) -> f (g b)
+fmap3 :: (a -> b) -> g a -> g b
+```
+
+Where `f . g` still represents the composite type of a `g` inside an `f`. So,
+when you have `fmap (fmap h)`, Haskell knows to use the `g` instance of `fmap`
+for the inner `fmap` (`fmap3`), not the infinite-looping `f . g` instance.
 
 
 Laws
