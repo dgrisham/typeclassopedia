@@ -83,6 +83,14 @@ instance Functor ITree where
     fmap g iTree = Node (map (fmap g) iTree)
 ```
 
+This (above) is not correct. It doesn't compile.
+
+The second line should be:
+
+```hs
+    fmap g (Node its) = Node $ fmap (fmap g) its
+```
+
 ---
 
 4. Give an example of a type of kind `* -> *` which cannot be made into an
@@ -113,10 +121,19 @@ instance Functor Maybe where
 
 Applying this through `Just (Just 1)`:
 
-```
+```hs
 (fmap (1+)) (Just (Just 1))
 = Just (fmap (1+) (Just 1))
 = Just (Just (1+1))
+```
+
+This reduction (above) isn't correct (though below you seem to point out the
+error). It should be:
+
+```hs
+(fmap (1+)) (Just (Just 1))
+= Just ((1+) (Just 1))
+= error
 ```
 
 The `fmap` doesn't fall through, and we reach an error when attempting to
@@ -131,6 +148,42 @@ composition and the function `g`, we have `fmap g (f0 . f1)`. First, note that
 evaluating the result of this call to `fmap`, we see that the `Functor` wrapper
 falls through and everything works (how to word this hmm, probably need a basic
 inductive proof).
+
+What we want to show is something like this:
+
+```hs
+instance (Functor f, Functor g) => Functor (f . g) where
+    fmap h = fmap (fmap h)
+```
+
+The stuff above isn't valid Haskell, but the idea should be clear (and closely
+resembles the stuff in the paragraph above). Imagine for example that `f` is
+`Maybe` and `g` is `[]`, then the functor `f . g` is a `Maybe []` (still
+parametric over the type that the list contains).
+
+We have to show it obeys the functor laws, but we already know that `f` and `g`
+individually obey the functor laws, so we can use that:
+
+```hs
+fg :: (Functor f, Functor g) => f . g
+fmap id fg
+=> fmap (fmap id) fg    --- composed functor instance
+=> fmap id fg           --- inner functor obeys `fmap id = id` (inductive hypothesis, if you want)
+=> fg                   --- outer functor obeys `fmap id = id` (also IH)
+```
+
+And you have to do a similar check for the composition law:
+
+```hs
+fg :: (Functor f, Functor g) => f . g
+fmap (f . g) fg
+=> fmap (fmap (f . g)) fg               --- composed functor instance
+=> fmap (fmap f . fmap g) fg            --- inner functor obeys `fmap (f . g) = fmap f .  fmap g`
+=> fmap (fmap f) . fmap (fmap g) $ fg   --- outer functor obeys `fmap (f . g) = fmap f . fmap g`
+```
+
+Note that in these proofs we don't actually ever need to mention the particular
+functor `fg` at any point.
 
 
 Laws
