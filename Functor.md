@@ -178,7 +178,7 @@ And you have to do a similar check for the composition law:
 fg :: (Functor f, Functor g) => f . g
 fmap (f . g) fg
 => fmap (fmap (f . g)) fg               --- composed functor instance
-=> fmap (fmap f . fmap g) fg            --- inner functor obeys `fmap (f . g) = fmap f .  fmap g`
+=> fmap (fmap f . fmap g) fg            --- inner functor obeys `fmap (f . g) = fmap f . fmap g`
 => fmap (fmap f) . fmap (fmap g) $ fg   --- outer functor obeys `fmap (f . g) = fmap f . fmap g`
 ```
 
@@ -247,9 +247,11 @@ instance Functor L where
 
 **Violates first law:**
 ```ghci
-Prelude> fmap (0+) (C 2 (C 3 E))
+Prelude> fmap id (C 2 (C 3 E))
 C 2 (C 2 (C 3 (C 3 E)))
 ```
+
+This said `fmap (+0)`, I changed it to `fmap id`.
 
 **Violates second law:**
 

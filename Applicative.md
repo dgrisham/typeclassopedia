@@ -123,6 +123,19 @@ pure ($ y) <*> u = pure (flip ($) y) <*> u
 
 Pfft, scrap this for now, come back later.
 
+```hs
+pure f <*> x = pure (flip ($)) <*> x <*> pure f
+             = (pure (flip ($)) <*> x) <*> pure f                    --- (<*>) associates left
+             = pure ($ f) <*> (pure (flip ($)) <*> x)                --- interchange
+             = ((pure (.) <*> pure ($ f)) <*> pure (flip ($))) <*> x --- composition
+             = pure ((.) ($ f) (flip ($))) <*> x                     --- homomorphism (x2)
+             = pure (\a -> ($ f) (flip ($) a)) <*> x                 --- defn (.)
+             = pure (\a -> (flip ($) a) f) <*> x                     --- defn ($)
+             = pure (\a -> f $ a) <*> x                              --- defn flip
+             = pure (\a -> f a) <*> x                                --- defn ($)
+             = pure f <*> x                                          --- eta-reduction
+```
+
 
 Instances
 =========
