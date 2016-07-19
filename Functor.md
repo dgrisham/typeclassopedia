@@ -204,9 +204,9 @@ type-inferencer is able to tell this. I'll annotate the instance with numbers,
 `fmap1 h = fmap2 (fmap3 h)`. Then the types are:
 
 ```hs
-fmap1 :: (a -> b) -> (f . g) a -> (f . g) b
-fmap2 :: (g a -> g b) -> f (g a) -> f (g b)
-fmap3 :: (a -> b) -> g a -> g b
+fmap1 :: Functor (f . g) => (a -> b) -> (f . g) a -> (f . g) b
+fmap2 :: Functor f => (g a -> g b) -> f (g a) -> f (g b)
+fmap3 :: Functor g => (a -> b) -> g a -> g b
 ```
 
 Where `f . g` still represents the composite type of a `g` inside an `f`. So,
